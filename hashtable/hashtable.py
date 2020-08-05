@@ -22,6 +22,7 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        self.capacity = [None for i in range(capacity)]
 
 
     def get_num_slots(self):
@@ -63,6 +64,13 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
+        hashvar = 5381
+
+        string = key.encode()
+
+        for x in string:
+            hashvar = (( hashvar << 5) + hashvar) + x
+        return hashvar
 
 
     def hash_index(self, key):
@@ -71,7 +79,7 @@ class HashTable:
         between within the storage capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.djb2(key) % len(self.capacity)
 
     def put(self, key, value):
         """
@@ -82,6 +90,16 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        idx = self.hash_index(key)
+        
+        if self.capacity[idx] is not None:
+            if self.capacity[idx].key is key:
+                self.capacity[idx].value = value
+            else:
+                self.capacity[idx].next = HashTableEntry(key, value)
+        else:
+            self.capacity[idx] = HashTableEntry(key, value)
+        return value
 
 
     def delete(self, key):
@@ -93,7 +111,18 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        hashed_key = self.djb2(key)
+        idx = hashed_key % len(self.capacity)
 
+        if self.capacity[idx] is None:
+            return None
+        elif self.capacity[idx].key is key:
+            if self.capacity[idx].next is not None:
+                self.capacity[idx].key = self.capacity[idx].next.key
+                self.capacity[idx].value = self.capacity[idx].next.value
+                self.capacity[idx].next = None
+            else:
+                self.capacity[idx] = None
 
     def get(self, key):
         """
@@ -104,6 +133,17 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        idx = self.hash_index(key)
+
+        if self.capacity[idx] is None:
+            return None
+        elif self.capacity[idx].key is key:
+            return self.capacity[idx].value
+        elif self.capacity[idx].key is not key:
+            if self.capacity[idx].next is not None and self.capacity[idx].next.key is key:
+                return self.capacity[idx].next.value
+            else:
+                return None
 
 
     def resize(self, new_capacity):
@@ -120,6 +160,16 @@ class HashTable:
 if __name__ == "__main__":
     ht = HashTable(8)
 
+    ht2 = HashTable(2)
+
+    ht2.put('one', '1')
+    ht2.put('twoo', '2')
+    ht2.put('two', '11')
+
+    print(ht2.get('one'))
+    print(ht2.get('twoo'))
+    print(ht2.get('two'))
+
     ht.put("line_1", "'Twas brillig, and the slithy toves")
     ht.put("line_2", "Did gyre and gimble in the wabe:")
     ht.put("line_3", "All mimsy were the borogoves,")
@@ -133,21 +183,21 @@ if __name__ == "__main__":
     ht.put("line_11", "So rested he by the Tumtum tree")
     ht.put("line_12", "And stood awhile in thought.")
 
-    print("")
+    # print("")
 
-    # Test storing beyond capacity
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test storing beyond capacity
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
-    # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    # # Test resizing
+    # old_capacity = ht.get_num_slots()
+    # ht.resize(ht.capacity * 2)
+    # new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # Test if data intact after resizing
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test if data intact after resizing
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
-    print("")
+    # print("")
